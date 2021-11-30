@@ -1,3 +1,3 @@
-module trabalho.com/Av2
+module mercadinhoBigGo
 
 go 1.16
