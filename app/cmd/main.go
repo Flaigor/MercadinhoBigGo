@@ -8,7 +8,6 @@ import ( // forma recomendade de declarar vários imports
 
 	"mercadinhoBigGo/domain/entities"
 	"mercadinhoBigGo/domain/services"
-	//"rsc.io/quote" // $ go mod tidy
 )
 
 var ( // também funciona com várias variáveis
