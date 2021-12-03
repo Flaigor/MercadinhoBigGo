@@ -80,14 +80,14 @@ func AddProdutoCarinho(Nome string, Quantidade uint16, carrinho *entities.Carrin
 
 func ExcluiCompraCarrinho(Nome string, carrinho *entities.Carrinho) {
 	var compra []entities.Compra
+	carrinho.Valor = 0
 	for i := 0; i < len(carrinho.Compras); i++ {
-		if Nome == carrinho.Compras[i].Produto.Nome {
-			carrinho.Valor -= carrinho.Compras[i].Valor
-			carrinho.Valor = float32(math.Floor(float64(carrinho.Valor)*100) / 100)
-		} else {
+		if Nome != carrinho.Compras[i].Produto.Nome {
 			compra = append(compra, carrinho.Compras[i])
+			carrinho.Valor += carrinho.Compras[i].Valor
 		}
 	}
+	carrinho.Valor = float32(math.Floor(float64(carrinho.Valor)*100) / 100)
 	carrinho.Compras = compra
 }
 
@@ -103,10 +103,7 @@ func ValidaNomeProduto(Nome string, estoque *entities.Estoque) bool {
 func ValidaQuantidadeProduto(Nome string, Quantidade uint16, estoque *entities.Estoque) bool {
 	for i := 0; i < len(estoque.Produtos); i++ {
 		if Nome == estoque.Produtos[i].Nome {
-			if estoque.Produtos[i].Quantidade >= int(Quantidade) {
-				return true
-			}
-			return false
+			return estoque.Produtos[i].Quantidade >= int(Quantidade)
 		}
 	}
 	return false
