@@ -11,6 +11,15 @@ type Controller struct {
 	Ctx context.Context
 }
 
+func (controller Controller) Saudacoes(Nome string) { // declaração base de uma func
+	fmt.Println("Olá", Nome, ", seja bem vindo!")
+}
+
+func (controller Controller) MontaMenurPrincipal() {
+	fmt.Println("|| 1 - Adicionar Produto ao carrinho\n|| 2 - Excluir prduto do carrinho")
+	fmt.Println("|| 3 - Consultar Carrinho\n|| 4 - Fechar Pedido\n|| 0 - Fazer Logoff")
+}
+
 func (controller Controller) Inicializacao(estoque *entities.Estoque, carrinho *entities.Carrinho) { // carregamento dos Produtos
 	carrinho.Valor = 0.0
 	carrinho.Compras = nil

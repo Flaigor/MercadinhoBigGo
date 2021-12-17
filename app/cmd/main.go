@@ -8,7 +8,6 @@ import ( // forma recomendade de declarar vários imports
 
 	"mercadinhoBigGo/domain/controllers"
 	"mercadinhoBigGo/domain/entities"
-	"mercadinhoBigGo/domain/services"
 )
 
 var ( // também funciona com várias variáveis
@@ -41,9 +40,9 @@ func main() {
 
 		carrinho.Valor = float32(math.Floor(float64(carrinho.Valor)*100) / 100)
 
-		services.Saudacoes(cliente.Nome)
+		controller.Saudacoes(cliente.Nome)
 		fmt.Println("Seu carrinho está em", carrinho.Valor, "Reais")
-		services.MontaMenurPrincipal()
+		controller.MontaMenurPrincipal()
 
 		fmt.Scan(pInt)
 

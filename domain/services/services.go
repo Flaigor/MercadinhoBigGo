@@ -7,15 +7,6 @@ import (
 	"mercadinhoBigGo/domain/entities"
 )
 
-func Saudacoes(Nome string) { // declaração base de uma func
-	fmt.Println("Olá", Nome, ", seja bem vindo!")
-}
-
-func MontaMenurPrincipal() {
-	fmt.Println("|| 1 - Adicionar Produto ao carrinho\n|| 2 - Excluir prduto do carrinho")
-	fmt.Println("|| 3 - Consultar Carrinho\n|| 4 - Fechar Pedido\n|| 0 - Fazer Logoff")
-}
-
 func CalculaQuadradoECubo(x rune) (int, int) { // É possivel retornar mais de um Valor em uma func
 	// rune = int32 porém precisa ser convertido, caso não seja int32
 	return int((x * x)), int((x * x * x))
