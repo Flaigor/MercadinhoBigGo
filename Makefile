@@ -6,7 +6,7 @@ run:
 	$(GOALIAS) run app\cmd\main.go
 
 test:
-	$(GOALIAS) test ./app/cmd
-	$(GOALIAS) test ./domain/entities
-	$(GOALIAS) test ./domain/services
+	$(GOALIAS) test ./app/cmd -v
+	$(GOALIAS) test ./domain/entities -v
+	$(GOALIAS) test ./domain/services -v
 	
