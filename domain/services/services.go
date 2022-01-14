@@ -1,8 +1,12 @@
 package services
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"log"
 	"math"
+	"net/http"
 
 	"mercadinhoBigGo/domain/entities"
 )
@@ -128,4 +132,25 @@ func ValidarPagamento(ValorCompra float32, dinheiro float32) bool {
 		return true
 	}
 	return false
+}
+
+func GetHostFromPost() []byte {
+
+	// values := map[string]string{"Nome": "Batata", "Quantidade": "5", "Preco": "4.3"}
+	values := entities.Produto{"Batata", 5, 4.3}
+	json_data, _ := json.Marshal(values)
+
+	resp, err := http.Post("https://httpbin.org/post", "application/json", bytes.NewBuffer(json_data))
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var res map[string]interface{}
+
+	json.NewDecoder(resp.Body).Decode(&res)
+
+	item, _ := json.Marshal(res)
+
+	return item
 }

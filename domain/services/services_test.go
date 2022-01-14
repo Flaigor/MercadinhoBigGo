@@ -1,12 +1,18 @@
 package services_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"math"
 	"mercadinhoBigGo/domain/entities"
 	"mercadinhoBigGo/domain/services"
+	"net/http"
 	"testing"
+
+	"github.com/jarcoal/httpmock"
 )
+
+// TEST TYPE: SIMPLE TEST
 
 func TestCalculaQuadradoECubo(t *testing.T) {
 	var tests = []struct {
@@ -107,29 +113,6 @@ func TestCalcularEstoque(t *testing.T) {
 	}
 }
 
-func ExampleListarProdutos() {
-	estoque := entities.Estoque{[]entities.Produto{entities.Produto{"Batata", 7, 3.0}, entities.Produto{"Guaraná", 12, 2.5}}}
-	services.ListarProdutos(&estoque)
-	// Output: Nome:  Batata
-	// Preço:  3
-	// Quantidade:  7
-	// -------------------------------
-	// Nome:  Guaraná
-	// Preço:  2.5
-	// Quantidade:  12
-	// -------------------------------
-}
-
-func ExampleListarComprasCarrinho() {
-	compra := entities.Compra{entities.Produto{"Batata", 7, 3.0}, 2, 6.0}
-	carrinho := entities.Carrinho{entities.Cliente{"Marcos"}, []entities.Compra{compra}, 6.0}
-	services.ListarComprasCarrinho(&carrinho)
-	// Output: Nome:  Batata
-	// Preço:  6
-	// Quantidade:  2
-	// -------------------------------
-}
-
 func TestAddProdutoCarinho(t *testing.T) {
 	var tests = []struct {
 		testName     string
@@ -211,4 +194,61 @@ func TestAddProdutoCarinho(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestGetHostFromPost(t *testing.T) {
+	var tests = []struct {
+		testName string
+		want     string
+	}{
+		{"Teste 1", "Tomate"},
+		{"Teste 2", "Suco"},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.testName, func(t *testing.T) {
+
+			httpmock.Activate()
+			defer httpmock.DeactivateAndReset()
+
+			response := fmt.Sprintf(`{"Nome":"%s","Quantidade":5,"Preco":4.3}`, tt.want)
+			httpmock.RegisterResponder(http.MethodPost, "https://httpbin.org/post",
+				httpmock.NewStringResponder(200, response))
+
+			resp := services.GetHostFromPost()
+
+			product := entities.Produto{}
+
+			json.Unmarshal(resp, &product)
+
+			if product.Nome != tt.want {
+				t.Errorf("got %s, want %s", product.Nome, tt.want)
+			}
+		})
+	}
+}
+
+// TEST TYPE: EXAMPLE
+
+func ExampleListarProdutos() {
+	estoque := entities.Estoque{[]entities.Produto{entities.Produto{"Batata", 7, 3.0}, entities.Produto{"Guaraná", 12, 2.5}}}
+	services.ListarProdutos(&estoque)
+	// Output: Nome:  Batata
+	// Preço:  3
+	// Quantidade:  7
+	// -------------------------------
+	// Nome:  Guaraná
+	// Preço:  2.5
+	// Quantidade:  12
+	// -------------------------------
+}
+
+func ExampleListarComprasCarrinho() {
+	compra := entities.Compra{entities.Produto{"Batata", 7, 3.0}, 2, 6.0}
+	carrinho := entities.Carrinho{entities.Cliente{"Marcos"}, []entities.Compra{compra}, 6.0}
+	services.ListarComprasCarrinho(&carrinho)
+	// Output: Nome:  Batata
+	// Preço:  6
+	// Quantidade:  2
+	// -------------------------------
 }
