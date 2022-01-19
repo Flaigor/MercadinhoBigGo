@@ -7,13 +7,18 @@ import (
 	"mercadinhoBigGo/domain/entities"
 	"mercadinhoBigGo/domain/services"
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/jarcoal/httpmock"
 )
 
-// TEST TYPE: SIMPLE TEST
+//Test types in this file:
+// - SIMPLE
+// - MOCKED HTTP REQUEST
+// - EXAMPLE
 
+// TEST TYPE: SIMPLE
 func TestCalculaQuadradoECubo(t *testing.T) {
 	var tests = []struct {
 		value                rune
@@ -119,7 +124,7 @@ func TestAddProdutoCarinho(t *testing.T) {
 		addProducts  []string
 		oldProducts  []entities.Produto
 		wantQuantity int
-		wantValue    float32
+		wantPrice    float32
 	}{
 		{
 			"OneItem",
@@ -142,7 +147,7 @@ func TestAddProdutoCarinho(t *testing.T) {
 			"TwoDifferentItems",
 			[]string{
 				"Batata",
-				"Guaraná",
+				"Leite",
 			},
 			[]entities.Produto{},
 			2, 5.5,
@@ -153,7 +158,7 @@ func TestAddProdutoCarinho(t *testing.T) {
 				"Batata",
 			},
 			[]entities.Produto{
-				entities.Produto{"Batata", 7, 3.0},
+				AuxGeraProdutos("Batata"),
 			},
 			2, 6.0,
 		},
@@ -163,8 +168,8 @@ func TestAddProdutoCarinho(t *testing.T) {
 				"Batata",
 			},
 			[]entities.Produto{
-				entities.Produto{"Batata", 7, 3.0},
-				entities.Produto{"Guaraná", 12, 2.5},
+				AuxGeraProdutos("Batata"),
+				AuxGeraProdutos("Leite"),
 			},
 			3, 8.5,
 		},
@@ -179,7 +184,7 @@ func TestAddProdutoCarinho(t *testing.T) {
 			cartValue += float32(math.Floor(float64(item.Preco)*100) / 100)
 		}
 		carrinho := entities.Carrinho{entities.Cliente{"Marcos"}, compras, cartValue}
-		estoque := entities.Estoque{[]entities.Produto{entities.Produto{"Batata", 7, 3.0}, entities.Produto{"Guaraná", 12, 2.5}}}
+		estoque := entities.Estoque{[]entities.Produto{AuxGeraProdutos("Batata"), AuxGeraProdutos("Leite")}}
 
 		testname := fmt.Sprintf("%s", tt.testName)
 		t.Run(testname, func(t *testing.T) {
@@ -189,19 +194,146 @@ func TestAddProdutoCarinho(t *testing.T) {
 			if len(carrinho.Compras) != tt.wantQuantity {
 				t.Errorf("quantity got %d, quantity want %d", len(carrinho.Compras), tt.wantQuantity)
 			}
-			if carrinho.Valor != tt.wantValue {
-				t.Errorf("value got %f, value want %f", carrinho.Valor, tt.wantValue)
+			if carrinho.Valor != tt.wantPrice {
+				t.Errorf("value got %f, value want %f", carrinho.Valor, tt.wantPrice)
 			}
 		})
 	}
 }
+
+func TestExcluiCompraCarrinho(t *testing.T) {
+	var tests = []struct {
+		testName       string
+		removeProducts []string
+		oldProducts    []entities.Produto
+		wantProducts   []entities.Produto
+		wantQuantity   int
+		wantPrice      float32
+	}{
+		{
+			"EmptyCart",
+			[]string{
+				"Batata",
+			},
+			[]entities.Produto{},
+			[]entities.Produto{},
+			0,
+			0.,
+		},
+		{
+			"Simple",
+			[]string{
+				"Batata",
+			},
+			[]entities.Produto{
+				AuxGeraProdutos("Batata"),
+			},
+			[]entities.Produto{},
+			0,
+			0.,
+		},
+		{
+			"TwoEqualItensOnCart",
+			[]string{
+				"Batata",
+			},
+			[]entities.Produto{
+				AuxGeraProdutos("Batata"),
+				AuxGeraProdutos("Batata"),
+			},
+			[]entities.Produto{},
+			0,
+			0.,
+		},
+		{
+			"TwoDifferentItemsOnCart",
+			[]string{
+				"Batata",
+			},
+			[]entities.Produto{
+				AuxGeraProdutos("Batata"),
+				AuxGeraProdutos("Leite"),
+			},
+			[]entities.Produto{
+				AuxGeraProdutos("Leite"),
+			},
+			1,
+			6.,
+		},
+		{
+			"RemovingTwoWithOneLeft",
+			[]string{
+				"Batata",
+				"Leite",
+			},
+			[]entities.Produto{
+				AuxGeraProdutos("Batata"),
+				AuxGeraProdutos("Leite"),
+				AuxGeraProdutos("Carne"),
+			},
+			[]entities.Produto{
+				AuxGeraProdutos("Carne"),
+			},
+			1,
+			57.99,
+		},
+		{
+			"RemovingTwoWithDuplicationAndThreeLeft",
+			[]string{
+				"Batata",
+				"Leite",
+			},
+			[]entities.Produto{
+				AuxGeraProdutos("Batata"),
+				AuxGeraProdutos("Suco"),
+				AuxGeraProdutos("Batata"),
+				AuxGeraProdutos("Carne"),
+				AuxGeraProdutos("Leite"),
+				AuxGeraProdutos("Carne"),
+			},
+			[]entities.Produto{
+				AuxGeraProdutos("Suco"),
+				AuxGeraProdutos("Carne"),
+				AuxGeraProdutos("Carne"),
+			},
+			3,
+			121.96,
+		},
+	}
+
+	for _, tt := range tests {
+		compras := []entities.Compra{}
+		cartValue := float32(math.Floor(float64(0)*100) / 100)
+		for _, item := range tt.oldProducts {
+			purchase := entities.Compra{item, 1, item.Preco}
+			compras = append(compras, purchase)
+			cartValue += float32(math.Floor(float64(item.Preco)*100) / 100)
+		}
+		carrinho := entities.Carrinho{entities.Cliente{"Marcos"}, compras, cartValue}
+
+		testname := fmt.Sprintf("%s", tt.testName)
+		t.Run(testname, func(t *testing.T) {
+			for _, item := range tt.removeProducts {
+				services.ExcluiCompraCarrinho(item, &carrinho)
+			}
+			if len(carrinho.Compras) != tt.wantQuantity {
+				t.Errorf("quantity got %d, quantity want %d", len(carrinho.Compras), tt.wantQuantity)
+			}
+			if carrinho.Valor != tt.wantPrice {
+				t.Errorf("value got %f, value want %f", carrinho.Valor, tt.wantPrice)
+			}
+		})
+	}
+}
+
+// TEST TYPE: MOCKED HTTP REQUEST
 
 func TestGetHostFromPost(t *testing.T) {
 	var tests = []struct {
 		testName string
 		want     string
 	}{
-		{"Teste 1", "Tomate"},
+		{"Teste 1", "Carne"},
 		{"Teste 2", "Suco"},
 	}
 
@@ -231,24 +363,93 @@ func TestGetHostFromPost(t *testing.T) {
 // TEST TYPE: EXAMPLE
 
 func ExampleListarProdutos() {
-	estoque := entities.Estoque{[]entities.Produto{entities.Produto{"Batata", 7, 3.0}, entities.Produto{"Guaraná", 12, 2.5}}}
+	estoque := entities.Estoque{[]entities.Produto{AuxGeraProdutos("Batata"), AuxGeraProdutos("Leite")}}
 	services.ListarProdutos(&estoque)
 	// Output: Nome:  Batata
 	// Preço:  3
 	// Quantidade:  7
 	// -------------------------------
-	// Nome:  Guaraná
+	// Nome:  Leite
 	// Preço:  2.5
 	// Quantidade:  12
 	// -------------------------------
 }
 
 func ExampleListarComprasCarrinho() {
-	compra := entities.Compra{entities.Produto{"Batata", 7, 3.0}, 2, 6.0}
+	compra := entities.Compra{AuxGeraProdutos("Batata"), 2, 6.0}
 	carrinho := entities.Carrinho{entities.Cliente{"Marcos"}, []entities.Compra{compra}, 6.0}
 	services.ListarComprasCarrinho(&carrinho)
 	// Output: Nome:  Batata
 	// Preço:  6
 	// Quantidade:  2
 	// -------------------------------
+}
+
+// TEST TYPE: AUXILIARY
+
+func AuxGeraProdutos(nome string) entities.Produto {
+	// if strings.EqualFold(strings.ToLower(nome), strings.ToLower("Carne") {
+	if strings.EqualFold(strings.ToLower(nome), strings.ToLower("Carne")) {
+		return entities.Produto{
+			Nome:       "Carne",
+			Preco:      57.99,
+			Quantidade: 100,
+		}
+	} else if strings.EqualFold(strings.ToLower(nome), strings.ToLower("Peixe")) {
+		return entities.Produto{
+			Nome:       "Peixe",
+			Preco:      43.99,
+			Quantidade: 25,
+		}
+	} else if strings.EqualFold(strings.ToLower(nome), strings.ToLower("Arroz")) {
+		return entities.Produto{
+			Preco:      15.99,
+			Quantidade: 30,
+			Nome:       "Arroz",
+		}
+	} else if strings.EqualFold(strings.ToLower(nome), strings.ToLower("Feijão")) {
+		return entities.Produto{
+			Nome:       "Feijão",
+			Preco:      7.99,
+			Quantidade: 50,
+		}
+	} else if strings.EqualFold(strings.ToLower(nome), strings.ToLower("Suco")) {
+		return entities.Produto{
+			Nome:       "Suco",
+			Preco:      5.98,
+			Quantidade: 300,
+		}
+	} else if strings.EqualFold(strings.ToLower(nome), strings.ToLower("Batata")) {
+		return entities.Produto{
+			Nome:       "Batata",
+			Preco:      4.30,
+			Quantidade: 1300,
+		}
+	} else if strings.EqualFold(strings.ToLower(nome), strings.ToLower("Queijo")) {
+		return entities.Produto{
+			Nome:       "Queijo",
+			Preco:      1.50,
+			Quantidade: 70,
+		}
+	} else if strings.EqualFold(strings.ToLower(nome), strings.ToLower("Refrigerante")) {
+		return entities.Produto{
+			Nome:       "Refrigerante",
+			Preco:      7.00,
+			Quantidade: 150,
+		}
+	} else if strings.EqualFold(strings.ToLower(nome), strings.ToLower("Frango")) {
+		return entities.Produto{
+			Nome:       "Frango",
+			Preco:      12.99,
+			Quantidade: 100,
+		}
+	} else if strings.EqualFold(strings.ToLower(nome), strings.ToLower("Leite")) {
+		return entities.Produto{
+			Nome:       "Leite",
+			Preco:      6.00,
+			Quantidade: 250,
+		}
+	} else {
+		return entities.Produto{}
+	}
 }

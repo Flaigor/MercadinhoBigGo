@@ -137,7 +137,12 @@ func ValidarPagamento(ValorCompra float32, dinheiro float32) bool {
 func GetHostFromPost() []byte {
 
 	// values := map[string]string{"Nome": "Batata", "Quantidade": "5", "Preco": "4.3"}
-	values := entities.Produto{"Batata", 5, 4.3}
+	values := entities.Produto{
+		Nome:       "Batata",
+		Quantidade: 5,
+		Preco:      4.3,
+	}
+
 	json_data, _ := json.Marshal(values)
 
 	resp, err := http.Post("https://httpbin.org/post", "application/json", bytes.NewBuffer(json_data))
