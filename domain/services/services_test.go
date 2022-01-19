@@ -1,3 +1,4 @@
+// +build unit
 package services_test
 
 import (
@@ -12,11 +13,6 @@ import (
 
 	"github.com/jarcoal/httpmock"
 )
-
-//Test types in this file:
-// - SIMPLE
-// - MOCKED HTTP REQUEST
-// - EXAMPLE
 
 // TEST TYPE: SIMPLE
 func TestCalculaQuadradoECubo(t *testing.T) {
@@ -132,7 +128,7 @@ func TestAddProdutoCarinho(t *testing.T) {
 				"Batata",
 			},
 			[]entities.Produto{},
-			1, 3.0,
+			1, 4.3,
 		},
 		{
 			"TwoEqualItems",
@@ -141,7 +137,7 @@ func TestAddProdutoCarinho(t *testing.T) {
 				"Batata",
 			},
 			[]entities.Produto{},
-			2, 6.0,
+			2, 8.6,
 		},
 		{
 			"TwoDifferentItems",
@@ -150,7 +146,7 @@ func TestAddProdutoCarinho(t *testing.T) {
 				"Leite",
 			},
 			[]entities.Produto{},
-			2, 5.5,
+			2, 10.3,
 		},
 		{
 			"OneRepeatedItem",
@@ -160,7 +156,7 @@ func TestAddProdutoCarinho(t *testing.T) {
 			[]entities.Produto{
 				AuxGeraProdutos("Batata"),
 			},
-			2, 6.0,
+			2, 8.6,
 		},
 		{
 			"OneItemInCartWithTwoItems",
@@ -171,7 +167,7 @@ func TestAddProdutoCarinho(t *testing.T) {
 				AuxGeraProdutos("Batata"),
 				AuxGeraProdutos("Leite"),
 			},
-			3, 8.5,
+			3, 14.6,
 		},
 	}
 
@@ -366,21 +362,21 @@ func ExampleListarProdutos() {
 	estoque := entities.Estoque{[]entities.Produto{AuxGeraProdutos("Batata"), AuxGeraProdutos("Leite")}}
 	services.ListarProdutos(&estoque)
 	// Output: Nome:  Batata
-	// Preço:  3
-	// Quantidade:  7
+	// Preço:  4.3
+	// Quantidade:  1300
 	// -------------------------------
 	// Nome:  Leite
-	// Preço:  2.5
-	// Quantidade:  12
+	// Preço:  6
+	// Quantidade:  250
 	// -------------------------------
 }
 
 func ExampleListarComprasCarrinho() {
-	compra := entities.Compra{AuxGeraProdutos("Batata"), 2, 6.0}
+	compra := entities.Compra{AuxGeraProdutos("Batata"), 2, 8.6}
 	carrinho := entities.Carrinho{entities.Cliente{"Marcos"}, []entities.Compra{compra}, 6.0}
 	services.ListarComprasCarrinho(&carrinho)
 	// Output: Nome:  Batata
-	// Preço:  6
+	// Preço:  8.6
 	// Quantidade:  2
 	// -------------------------------
 }
