@@ -154,7 +154,7 @@ func TestAddProdutoCarinho(t *testing.T) {
 				"Batata",
 			},
 			[]entities.Produto{
-				AuxGeraProdutos("Batata"),
+				AuxGenerateProducts("Batata"),
 			},
 			2, 8.6,
 		},
@@ -164,8 +164,8 @@ func TestAddProdutoCarinho(t *testing.T) {
 				"Batata",
 			},
 			[]entities.Produto{
-				AuxGeraProdutos("Batata"),
-				AuxGeraProdutos("Leite"),
+				AuxGenerateProducts("Batata"),
+				AuxGenerateProducts("Leite"),
 			},
 			3, 14.6,
 		},
@@ -180,7 +180,7 @@ func TestAddProdutoCarinho(t *testing.T) {
 			cartValue += float32(math.Floor(float64(item.Preco)*100) / 100)
 		}
 		carrinho := entities.Carrinho{entities.Cliente{"Marcos"}, compras, cartValue}
-		estoque := entities.Estoque{[]entities.Produto{AuxGeraProdutos("Batata"), AuxGeraProdutos("Leite")}}
+		estoque := entities.Estoque{[]entities.Produto{AuxGenerateProducts("Batata"), AuxGenerateProducts("Leite")}}
 
 		testname := fmt.Sprintf("%s", tt.testName)
 		t.Run(testname, func(t *testing.T) {
@@ -222,7 +222,7 @@ func TestExcluiCompraCarrinho(t *testing.T) {
 				"Batata",
 			},
 			[]entities.Produto{
-				AuxGeraProdutos("Batata"),
+				AuxGenerateProducts("Batata"),
 			},
 			[]entities.Produto{},
 			0,
@@ -234,8 +234,8 @@ func TestExcluiCompraCarrinho(t *testing.T) {
 				"Batata",
 			},
 			[]entities.Produto{
-				AuxGeraProdutos("Batata"),
-				AuxGeraProdutos("Batata"),
+				AuxGenerateProducts("Batata"),
+				AuxGenerateProducts("Batata"),
 			},
 			[]entities.Produto{},
 			0,
@@ -247,11 +247,11 @@ func TestExcluiCompraCarrinho(t *testing.T) {
 				"Batata",
 			},
 			[]entities.Produto{
-				AuxGeraProdutos("Batata"),
-				AuxGeraProdutos("Leite"),
+				AuxGenerateProducts("Batata"),
+				AuxGenerateProducts("Leite"),
 			},
 			[]entities.Produto{
-				AuxGeraProdutos("Leite"),
+				AuxGenerateProducts("Leite"),
 			},
 			1,
 			6.,
@@ -263,12 +263,12 @@ func TestExcluiCompraCarrinho(t *testing.T) {
 				"Leite",
 			},
 			[]entities.Produto{
-				AuxGeraProdutos("Batata"),
-				AuxGeraProdutos("Leite"),
-				AuxGeraProdutos("Carne"),
+				AuxGenerateProducts("Batata"),
+				AuxGenerateProducts("Leite"),
+				AuxGenerateProducts("Carne"),
 			},
 			[]entities.Produto{
-				AuxGeraProdutos("Carne"),
+				AuxGenerateProducts("Carne"),
 			},
 			1,
 			57.99,
@@ -280,17 +280,17 @@ func TestExcluiCompraCarrinho(t *testing.T) {
 				"Leite",
 			},
 			[]entities.Produto{
-				AuxGeraProdutos("Batata"),
-				AuxGeraProdutos("Suco"),
-				AuxGeraProdutos("Batata"),
-				AuxGeraProdutos("Carne"),
-				AuxGeraProdutos("Leite"),
-				AuxGeraProdutos("Carne"),
+				AuxGenerateProducts("Batata"),
+				AuxGenerateProducts("Suco"),
+				AuxGenerateProducts("Batata"),
+				AuxGenerateProducts("Carne"),
+				AuxGenerateProducts("Leite"),
+				AuxGenerateProducts("Carne"),
 			},
 			[]entities.Produto{
-				AuxGeraProdutos("Suco"),
-				AuxGeraProdutos("Carne"),
-				AuxGeraProdutos("Carne"),
+				AuxGenerateProducts("Suco"),
+				AuxGenerateProducts("Carne"),
+				AuxGenerateProducts("Carne"),
 			},
 			3,
 			121.96,
@@ -317,6 +317,128 @@ func TestExcluiCompraCarrinho(t *testing.T) {
 			}
 			if carrinho.Valor != tt.wantPrice {
 				t.Errorf("value got %f, value want %f", carrinho.Valor, tt.wantPrice)
+			}
+		})
+	}
+}
+
+func TestValidaNomeProduto(t *testing.T) {
+	var tests = []struct {
+		testName    string
+		productName string
+		stock       entities.Estoque
+		want        bool
+	}{
+		{
+			"EmptyStock",
+			"Batata",
+			AuxGenerateStock("empty"),
+			false,
+		},
+		{
+			"UniqueStockTrue",
+			"Batata",
+			AuxGenerateStock("unique"),
+			true,
+		},
+		{
+			"UniqueStockFalse",
+			"Carne",
+			AuxGenerateStock("unique"),
+			false,
+		},
+		{
+			"SimpleStockTrue",
+			"Peixe",
+			AuxGenerateStock("simple"),
+			true,
+		},
+		{
+			"SimpleStockFalse",
+			"Arroz",
+			AuxGenerateStock("simple"),
+			false,
+		},
+		{
+			"FullStockTrue",
+			"Refrigerante",
+			AuxGenerateStock("full"),
+			true,
+		},
+		{
+			"FullStockFalse",
+			"Guaraná",
+			AuxGenerateStock("full"),
+			false,
+		},
+	}
+	for _, tt := range tests {
+
+		testname := fmt.Sprintf("%s", tt.testName)
+		t.Run(testname, func(t *testing.T) {
+
+			result := services.ValidaNomeProduto(tt.productName, &tt.stock)
+
+			if result != tt.want {
+				t.Errorf("got %v, want %v", result, tt.want)
+			}
+		})
+	}
+}
+
+func TestValidaDisponibilidadeNoEstoque(t *testing.T) {
+	var tests = []struct {
+		testName    string
+		productName string
+		quantity    uint16
+		stock       entities.Estoque
+		want        bool
+	}{
+		{
+			"Equal",
+			"Batata",
+			1299,
+			AuxGenerateStock("full"),
+			true,
+		},
+		{
+			"Less",
+			"Batata",
+			1300,
+			AuxGenerateStock("full"),
+			true,
+		},
+		{
+			"More",
+			"Batata",
+			1301,
+			AuxGenerateStock("full"),
+			false,
+		},
+		{
+			"NotFoundSimpleStock",
+			"Refrigerante",
+			150,
+			AuxGenerateStock("simple"),
+			false,
+		},
+		{
+			"NotFoundEmptyStock",
+			"Batata",
+			1300,
+			AuxGenerateStock("empty"),
+			false,
+		},
+	}
+	for _, tt := range tests {
+
+		testname := fmt.Sprintf("%s", tt.testName)
+		t.Run(testname, func(t *testing.T) {
+
+			result := services.ValidaDisponibilidadeNoEstoque(tt.productName, tt.quantity, &tt.stock)
+
+			if result != tt.want {
+				t.Errorf("got %v, want %v", result, tt.want)
 			}
 		})
 	}
@@ -359,7 +481,7 @@ func TestGetHostFromPost(t *testing.T) {
 // TEST TYPE: EXAMPLE
 
 func ExampleListarProdutos() {
-	estoque := entities.Estoque{[]entities.Produto{AuxGeraProdutos("Batata"), AuxGeraProdutos("Leite")}}
+	estoque := entities.Estoque{[]entities.Produto{AuxGenerateProducts("Batata"), AuxGenerateProducts("Leite")}}
 	services.ListarProdutos(&estoque)
 	// Output: Nome:  Batata
 	// Preço:  4.3
@@ -372,7 +494,7 @@ func ExampleListarProdutos() {
 }
 
 func ExampleListarComprasCarrinho() {
-	compra := entities.Compra{AuxGeraProdutos("Batata"), 2, 8.6}
+	compra := entities.Compra{AuxGenerateProducts("Batata"), 2, 8.6}
 	carrinho := entities.Carrinho{entities.Cliente{"Marcos"}, []entities.Compra{compra}, 6.0}
 	services.ListarComprasCarrinho(&carrinho)
 	// Output: Nome:  Batata
@@ -383,8 +505,7 @@ func ExampleListarComprasCarrinho() {
 
 // TEST TYPE: AUXILIARY
 
-func AuxGeraProdutos(nome string) entities.Produto {
-	// if strings.EqualFold(strings.ToLower(nome), strings.ToLower("Carne") {
+func AuxGenerateProducts(nome string) entities.Produto {
 	if strings.EqualFold(strings.ToLower(nome), strings.ToLower("Carne")) {
 		return entities.Produto{
 			Nome:       "Carne",
@@ -448,4 +569,39 @@ func AuxGeraProdutos(nome string) entities.Produto {
 	} else {
 		return entities.Produto{}
 	}
+}
+
+func AuxGenerateStock(size string) entities.Estoque {
+	switch size {
+	case "unique":
+		return entities.Estoque{
+			[]entities.Produto{
+				AuxGenerateProducts("Batata"),
+			},
+		}
+	case "simple":
+		return entities.Estoque{
+			[]entities.Produto{
+				AuxGenerateProducts("Batata"),
+				AuxGenerateProducts("Peixe"),
+			},
+		}
+	case "full":
+		return entities.Estoque{
+			[]entities.Produto{
+				AuxGenerateProducts("Carne"),
+				AuxGenerateProducts("Peixe"),
+				AuxGenerateProducts("Arroz"),
+				AuxGenerateProducts("Feijão"),
+				AuxGenerateProducts("Suco"),
+				AuxGenerateProducts("Batata"),
+				AuxGenerateProducts("Queijo"),
+				AuxGenerateProducts("Refrigerante"),
+				AuxGenerateProducts("Frango"),
+				AuxGenerateProducts("Leite"),
+			},
+		}
+	}
+	//empty
+	return entities.Estoque{}
 }

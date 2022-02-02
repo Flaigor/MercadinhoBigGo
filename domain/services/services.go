@@ -95,7 +95,7 @@ func ValidaNomeProduto(Nome string, estoque *entities.Estoque) bool {
 	return false
 }
 
-func ValidaQuantidadeProduto(Nome string, Quantidade uint16, estoque *entities.Estoque) bool {
+func ValidaDisponibilidadeNoEstoque(Nome string, Quantidade uint16, estoque *entities.Estoque) bool {
 	for i := 0; i < len(estoque.Produtos); i++ {
 		if Nome == estoque.Produtos[i].Nome {
 			return estoque.Produtos[i].Quantidade >= int(Quantidade)

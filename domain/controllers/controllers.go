@@ -98,7 +98,7 @@ func (controller Controller) Process(op *int8, estoque *entities.Estoque, carrin
 		if services.ValidaNomeProduto(NomeProduto, estoque) {
 			fmt.Println("Quantas unidades?")
 			fmt.Scan(&quantidade)
-			if services.ValidaQuantidadeProduto(NomeProduto, quantidade, estoque) {
+			if services.ValidaDisponibilidadeNoEstoque(NomeProduto, quantidade, estoque) {
 				services.AddProdutoCarinho(NomeProduto, quantidade, carrinho, estoque)
 			} else {
 				fmt.Println("Quantidade inválida")
