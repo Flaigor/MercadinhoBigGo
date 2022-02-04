@@ -1,4 +1,3 @@
-// +build unit
 package services_test
 
 import (
@@ -444,6 +443,52 @@ func TestValidaDisponibilidadeNoEstoque(t *testing.T) {
 	}
 }
 
+func TestValidaNomeCompra(t *testing.T) {
+	var tests = []struct {
+		testName    string
+		productName string
+		cart        entities.Carrinho
+		want        bool
+	}{
+		{
+			"UniqueAndContain",
+			"Carne",
+			AuxGenerateCart("unique"),
+			true,
+		},
+		{
+			"UniqueAndNotContain",
+			"Batata",
+			AuxGenerateCart("unique"),
+			false,
+		},
+		{
+			"SimpleAndContain",
+			"Refrigerante",
+			AuxGenerateCart("simple"),
+			true,
+		},
+		{
+			"SimpleAndNotContain",
+			"Queijo",
+			AuxGenerateCart("simple"),
+			false,
+		},
+	}
+	for _, tt := range tests {
+
+		testname := fmt.Sprintf("%s", tt.testName)
+		t.Run(testname, func(t *testing.T) {
+
+			result := services.ValidaNomeCompra(tt.productName, &tt.cart)
+
+			if result != tt.want {
+				t.Errorf("got %v, want %v", result, tt.want)
+			}
+		})
+	}
+}
+
 // TEST TYPE: MOCKED HTTP REQUEST
 
 func TestGetHostFromPost(t *testing.T) {
@@ -501,6 +546,22 @@ func ExampleListarComprasCarrinho() {
 	// Preço:  8.6
 	// Quantidade:  2
 	// -------------------------------
+}
+
+func ExampleValidarPagamento() {
+	services.ValidarPagamento(1., 10.)
+	services.ValidarPagamento(10., 1.)
+	// Output:
+	// Seu troco: 9 Reais
+	// Ainda falta: 9 Reais, favor completar o Valor
+	// Ainda falta: 8 Reais, favor completar o Valor
+	// Ainda falta: 7 Reais, favor completar o Valor
+	// Ainda falta: 6 Reais, favor completar o Valor
+	// Ainda falta: 5 Reais, favor completar o Valor
+	// Ainda falta: 4 Reais, favor completar o Valor
+	// Ainda falta: 3 Reais, favor completar o Valor
+	// Ainda falta: 2 Reais, favor completar o Valor
+	// Ainda falta: 1 Reais, favor completar o Valor
 }
 
 // TEST TYPE: AUXILIARY
@@ -604,4 +665,47 @@ func AuxGenerateStock(size string) entities.Estoque {
 	}
 	//empty
 	return entities.Estoque{}
+}
+
+func AuxGeneratePurchase(size string) entities.Compra {
+	switch size {
+	case "unique":
+		return entities.Compra{
+			Produto:    AuxGenerateProducts("Carne"),
+			Quantidade: 1,
+			Valor:      57.99,
+		}
+	case "simple":
+		return entities.Compra{
+			Produto:    AuxGenerateProducts("Refrigerante"),
+			Quantidade: 2,
+			Valor:      14.,
+		}
+	}
+	//empty
+	return entities.Compra{}
+}
+
+func AuxGenerateCart(size string) entities.Carrinho {
+	switch size {
+	case "unique":
+		return entities.Carrinho{
+			Cliente: entities.Cliente{"ClientUnique"},
+			Compras: []entities.Compra{
+				AuxGeneratePurchase("unique"),
+			},
+			Valor: 57.99,
+		}
+	case "simple":
+		return entities.Carrinho{
+			Cliente: entities.Cliente{"ClientSimple"},
+			Compras: []entities.Compra{
+				AuxGeneratePurchase("unique"),
+				AuxGeneratePurchase("simple"),
+			},
+			Valor: 71.99,
+		}
+	}
+	//empty
+	return entities.Carrinho{}
 }
