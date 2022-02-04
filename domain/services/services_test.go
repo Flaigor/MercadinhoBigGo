@@ -76,6 +76,8 @@ func TestCalcularDoisValores(t *testing.T) {
 		{8, -2, 4, -4},
 		{-8, -2, 4, 4},
 		{2.6, 2, 4, 1.3},
+		//default
+		{0, 0, 0, 0},
 	}
 
 	for _, tt := range tests {
@@ -550,9 +552,11 @@ func ExampleListarComprasCarrinho() {
 
 func ExampleValidarPagamento() {
 	services.ValidarPagamento(1., 10.)
+	services.ValidarPagamento(1., 1.)
 	services.ValidarPagamento(10., 1.)
 	// Output:
 	// Seu troco: 9 Reais
+	// O dinheiro está certo, não precisa de troco
 	// Ainda falta: 9 Reais, favor completar o Valor
 	// Ainda falta: 8 Reais, favor completar o Valor
 	// Ainda falta: 7 Reais, favor completar o Valor
@@ -562,6 +566,7 @@ func ExampleValidarPagamento() {
 	// Ainda falta: 3 Reais, favor completar o Valor
 	// Ainda falta: 2 Reais, favor completar o Valor
 	// Ainda falta: 1 Reais, favor completar o Valor
+	// O dinheiro está certo, não precisa de troco
 }
 
 // TEST TYPE: AUXILIARY

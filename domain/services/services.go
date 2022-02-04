@@ -116,7 +116,7 @@ func ValidaNomeCompra(Nome string, carrinho *entities.Carrinho) bool {
 func ValidarPagamento(ValorCompra float32, dinheiro float32) bool {
 	ValorCompra -= dinheiro
 	ValorCompra = float32(math.Floor(float64(ValorCompra)*100) / 100)
-	if ValorCompra <= 0.0 {
+	if ValorCompra < 0.0 {
 		fmt.Println("Seu troco:", (ValorCompra * -1), "Reais")
 		return true
 	} else if ValorCompra > 0.0 {
@@ -127,11 +127,15 @@ func ValidarPagamento(ValorCompra float32, dinheiro float32) bool {
 			ValorCompra = float32(math.Floor(float64(ValorCompra)*100) / 100)
 			if ValorCompra < 0.0 {
 				fmt.Println("Seu troco:", (ValorCompra * -1), "Reais")
+			} else if ValorCompra == 0.0 {
+				fmt.Println("O dinheiro está certo, não precisa de troco")
 			}
 		}
 		return true
+	} else {
+		fmt.Println("O dinheiro está certo, não precisa de troco")
+		return true
 	}
-	return false
 }
 
 func GetHostFromPost() []byte {
