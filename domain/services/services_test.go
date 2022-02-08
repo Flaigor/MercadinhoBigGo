@@ -495,11 +495,13 @@ func TestValidaNomeCompra(t *testing.T) {
 
 func TestGetHostFromPost(t *testing.T) {
 	var tests = []struct {
-		testName string
-		want     string
+		testName   string
+		statusCode int
+		want       string
 	}{
-		{"Teste 1", "Carne"},
-		{"Teste 2", "Suco"},
+		{"Teste 1", 200, "Carne"},
+		{"Teste 2", 200, "Suco"},
+		{"Teste 3", 500, ""},
 	}
 
 	for _, tt := range tests {
@@ -510,7 +512,7 @@ func TestGetHostFromPost(t *testing.T) {
 
 			response := fmt.Sprintf(`{"Nome":"%s","Quantidade":5,"Preco":4.3}`, tt.want)
 			httpmock.RegisterResponder(http.MethodPost, "https://httpbin.org/post",
-				httpmock.NewStringResponder(200, response))
+				httpmock.NewStringResponder(tt.statusCode, response))
 
 			resp := services.GetHostFromPost()
 
@@ -567,6 +569,19 @@ func ExampleValidarPagamento() {
 	// Ainda falta: 2 Reais, favor completar o Valor
 	// Ainda falta: 1 Reais, favor completar o Valor
 	// O dinheiro está certo, não precisa de troco
+}
+
+// TEST TYPE: BENCHMARK
+func BenchmarkCalcularEstoque(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		services.CalcularEstoque(b.N, i)
+	}
+}
+
+func BenchmarkCalculaQuadradoECubo(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		services.CalculaQuadradoECubo(rune(i))
+	}
 }
 
 // TEST TYPE: AUXILIARY
