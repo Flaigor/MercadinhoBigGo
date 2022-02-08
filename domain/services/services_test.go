@@ -24,7 +24,7 @@ func TestCalculaQuadradoECubo(t *testing.T) {
 		{2, 4, 8},
 		{3, 9, 27},
 		{4, 16, 64},
-		{5, 25, 125},
+		{5, 25, 125}, //TableDrivenTests
 	}
 
 	for _, tt := range tests {
@@ -729,3 +729,26 @@ func AuxGenerateCart(size string) entities.Carrinho {
 	//empty
 	return entities.Carrinho{}
 }
+
+// func goldenValue(t *testing.T, goldenFile string, actual string, update bool) string {
+// 	t.Helper()
+// 	goldenPath := "testdata/" + goldenFile + ".golden"
+
+// 	f, err := os.OpenFile(goldenPath, os.O_RDWR, 0644)
+// 	defer f.Close()
+
+// 	if update {
+// 		_, err := f.WriteString(actual)
+// 		if err != nil {
+// 			t.Fatalf("Error writing to file %s: %s", goldenPath, err)
+// 		}
+
+// 		return actual
+// 	}
+
+// 	content, err := ioutil.ReadAll(f)
+// 	if err != nil {
+// 		t.Fatalf("Error opening file %s: %s", goldenPath, err)
+// 	}
+// 	return string(content)
+// }
